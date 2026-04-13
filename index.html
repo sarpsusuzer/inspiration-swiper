@@ -8,7 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow: hidden; height: 100%; position: fixed; width: 100%; }
+    #app { overflow-y: auto; height: 100vh; -webkit-overflow-scrolling: touch; }
     body { font-family: 'Afacad Flux', sans-serif; background: #fff; color: #111; min-height: 100vh; }
     input, button { font-family: inherit; font-size: 15px; outline: none; }
     input { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #111; }
@@ -400,8 +401,9 @@ function buildSwipe() {
     badgeNope.style.opacity = Math.min(1, Math.max(0, -dx/80));
   };
 
-  topCard.addEventListener("mousedown", e => { dragStartX = e.clientX; isDragging = true; topCard.style.cursor = "grabbing"; });
-  topCard.addEventListener("touchstart", e => {
+  const dragArea = topCard.querySelector("img");
+  dragArea.addEventListener("mousedown", e => { dragStartX = e.clientX; isDragging = true; topCard.style.cursor = "grabbing"; });
+  dragArea.addEventListener("touchstart", e => {
     if (e.touches.length > 1) return;
     dragStartX = e.touches[0].clientX;
     isDragging = true;
