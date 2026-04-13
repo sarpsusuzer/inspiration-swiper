@@ -48,23 +48,21 @@
     .tab { background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 16px; font-size: 14px; color: #888; margin-bottom: -1px; }
     .tab:hover { background: none; color: #111; }
     .tab.active { color: #111; font-weight: 500; border-bottom-color: #111; }
-    .session-row { border: 1px solid #e5e5e5; border-radius: 8px; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: background 0.1s; }
-    .session-row:hover { background: #fafafa; }
+    .session-row { border: 1px solid #e5e5e5; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .session-row-content { flex: 1; cursor: pointer; }
     .progress-bar { height: 4px; background: #f0f0f0; border-radius: 4px; margin-top: 8px; }
     .progress-fill { height: 100%; background: #111; border-radius: 4px; transition: width 0.3s; }
-    /* Swipe */
     .swipe-page { max-width: 440px; margin: 0 auto; padding: 2rem 1.5rem; }
     .card-stack { position: relative; height: 560px; margin-bottom: 1.5rem; touch-action: none; user-select: none; }
     .swipe-card { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: #f5f5f5; }
-    .swipe-card img { width: 100%; height: 100%; object-fit: contain; object-position: center; pointer-events: none; background: #f5f5f5; }
+    .swipe-card img { width: 100%; height: 100%; object-fit: contain; object-position: center; pointer-events: none; background: #f5f5f5; display: block; }
     .swipe-label-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 1rem 1rem; background: linear-gradient(transparent, rgba(0,0,0,0.55)); }
     .swipe-label-overlay p { color: #fff; font-size: 14px; font-weight: 500; }
-    .badge-like, .badge-nope { position: absolute; top: 16px; padding: 5px 14px; color: #fff; border-radius: 8px; font-size: 14px; font-weight: 500; pointer-events: none; }
+    .badge-like, .badge-nope { position: absolute; top: 16px; padding: 5px 14px; color: #fff; border-radius: 8px; font-size: 14px; font-weight: 500; pointer-events: none; opacity: 0; }
     .badge-like { left: 16px; background: #22c55e; }
     .badge-nope { right: 16px; background: #ef4444; }
     .swipe-actions { display: flex; gap: 14px; justify-content: center; align-items: center; }
     .btn-circle { border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    /* Modal */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; cursor: zoom-out; }
     .modal-inner { position: relative; max-width: 820px; width: 100%; }
     .modal-inner img { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; display: block; }
@@ -82,7 +80,6 @@
 </head>
 <body>
 <div id="app"></div>
-
 <script>
 const SUPABASE_URL = "https://sxvqmhetammwyrdjyseq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4dnFtaGV0YW1td3lyZGp5c2VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDU1NTMsImV4cCI6MjA5MTY4MTU1M30.1GXKNEi9OJLLYeKwFXyMZRtKeG0Q6b0nWqsgZjqSGwY";
@@ -98,25 +95,23 @@ const h = (tag, attrs, ...children) => {
     else if (k === "style" && typeof v === "object") Object.assign(el.style, v);
     else el.setAttribute(k, v);
   });
-  children.flat(Infinity).forEach(c => c != null && el.appendChild(typeof c === "string" ? document.createTextNode(c) : c));
+  children.flat(Infinity).forEach(c => { if (c != null && c !== false) el.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
   return el;
 };
 
-const api = async (path, opts = {}) => {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...opts,
-    headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", "Prefer": opts.prefer || "", ...(opts.headers || {}) }
-  });
-  return r;
-};
+const api = async (path, opts = {}) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  ...opts,
+  headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", "Prefer": opts.prefer || "", ...(opts.headers || {}) }
+});
 
 const db = {
   async getImages() { const r = await api("images?order=added_at.asc"); return r.ok ? r.json() : []; },
   async addImage(img) { await api("images", { method: "POST", body: JSON.stringify(img), prefer: "return=minimal" }); },
   async removeImage(id) { await api(`images?id=eq.${id}`, { method: "DELETE" }); },
   async getSessions() { const r = await api("sessions?order=started_at.asc"); return r.ok ? r.json() : []; },
-  async deleteSession(name) { await api(`sessions?name=eq.${encodeURIComponent(name)}`, { method: "DELETE" }); },
   async upsertSession(s) { await api("sessions", { method: "POST", body: JSON.stringify(s), prefer: "resolution=merge-duplicates,return=minimal" }); },
+  async deleteSession(name) { await api(`sessions?name=eq.${encodeURIComponent(name)}`, { method: "DELETE" }); },
+  async uploadImage(blob, id) {
     const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${id}.jpg`, {
       method: "POST", headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "image/jpeg", "x-upsert": "true" }, body: blob
     });
@@ -146,10 +141,18 @@ function compressToBlob(file, maxW = 1200, quality = 0.82) {
   });
 }
 
-// App state
-let state = { view: "home", images: [], sessions: [], session: null, previewImg: null, dashTab: "images", selectedClient: null, dragX: 0, dragging: false, swipeAnim: null, done: false, uploading: false, uploadError: "", dragOver: false, downloading: false, clientName: "", nameError: "", dashPass: "", dashError: "", uploadLabel: "", loadError: "", loading: true };
+let state = {
+  view: "home", images: [], sessions: [], session: null, previewImg: null,
+  dashTab: "images", selectedClient: null, done: false,
+  uploading: false, uploadError: "", dragOver: false, downloading: false,
+  clientName: "", nameError: "", dashPass: "", dashError: "", uploadLabel: "",
+  loadError: "", loading: true
+};
+
+let activeTopCard = null;
 let dragStartX = null;
-let activeTopCard = null; // direct DOM ref to top swipe card
+let isDragging = false;
+let currentDragX = 0;
 let rafId = null;
 
 const app = document.getElementById("app");
@@ -161,10 +164,8 @@ async function reload() {
 }
 
 async function init() {
-  try {
-    await reload();
-    state.loading = false;
-  } catch(e) { state.loadError = "Cannot connect to database: " + e.message; state.loading = false; }
+  try { await reload(); state.loading = false; }
+  catch(e) { state.loadError = "Cannot connect: " + e.message; state.loading = false; }
   render();
   setInterval(async () => { await reload(); if (state.view !== "swipe") render(); }, 4000);
 }
@@ -174,16 +175,13 @@ function buildView() {
     h("p", { class: "muted" }, "Connecting to database…"),
     state.loadError ? h("p", { class: "error", style: { textAlign:"center", maxWidth:"300px" } }, state.loadError) : null
   );
-
   const overlay = state.previewImg ? buildPreview() : null;
-
   let page;
   if (state.view === "home") page = buildHome();
   else if (state.view === "dashlock") page = buildDashlock();
   else if (state.view === "dashboard") page = buildDashboard();
   else if (state.view === "swipe") page = buildSwipe();
   else if (state.view === "done") page = buildDone();
-
   const wrap = h("div", null, page);
   if (overlay) wrap.appendChild(overlay);
   return wrap;
@@ -194,12 +192,12 @@ function buildHome() {
   nameInput.addEventListener("input", e => { state.clientName = e.target.value; state.nameError = ""; });
   nameInput.addEventListener("keydown", e => e.key === "Enter" && startSession());
   return h("div", { class: "page" },
-    h("div", { style: { marginBottom: "2.5rem" } },
+    h("div", { style: { marginBottom:"2.5rem" } },
       h("p", { class: "brand" }, "Datassist"),
       h("h1", { class: "title" }, "Inspiration Board"),
       h("p", { class: "subtitle" }, "Swipe through visual references and tell us what resonates with you.")
     ),
-    h("div", { style: { marginBottom: "16px" } },
+    h("div", { style: { marginBottom:"16px" } },
       h("label", null, "Your name"),
       nameInput,
       state.nameError ? h("p", { class: "error" }, state.nameError) : null
@@ -242,31 +240,45 @@ function buildDashboard() {
       h("div", { class: "card-header" }, "Upload images"),
       h("div", { class: "card-body" }, buildDropZone())
     ),
-    images.length === 0 ? h("p", { class: "empty" }, "No images yet. Upload some above.") :
-    h("div", null,
-      h("div", { style: { display:"flex", justifyContent:"flex-end", marginBottom:"12px" } },
-        h("button", { class: "btn-outline", onclick: downloadAll, disabled: state.downloading }, state.downloading ? "Preparing zip…" : `Download all (${images.length})`)
-      ),
-      h("div", { class: "grid-images" }, ...images.map(buildImageCard))
-    )
+    images.length === 0
+      ? h("p", { class: "empty" }, "No images yet. Upload some above.")
+      : h("div", null,
+          h("div", { style: { display:"flex", justifyContent:"flex-end", marginBottom:"12px" } },
+            h("button", { class: "btn-outline", onclick: downloadAll, disabled: state.downloading },
+              state.downloading ? "Preparing zip…" : `Download all (${images.length})`
+            )
+          ),
+          h("div", { class: "grid-images" }, ...images.map(buildImageCard))
+        )
   );
 
-  const resultsTab = sessions.length === 0 ? h("p", { class: "empty" }, "No client sessions yet.") :
-    state.selectedClient ? buildClientDetail(state.selectedClient) :
-    h("div", null, ...sessions.map(c => {
-      const voted = Object.keys(c.votes || {}).length;
-      const likes = Object.values(c.votes || {}).filter(v => v === "like").length;
-      const superlikes = Object.values(c.votes || {}).filter(v => v === "superlike").length;
-      const progress = images.length ? Math.round((voted / images.length) * 100) : 0;
-      return h("div", { class: "session-row" },
-        h("div", { style: { flex:"1", cursor:"pointer" }, onclick: () => { state.selectedClient = c; render(); } },
-          h("p", { style: { fontWeight:"500", fontSize:"15px", marginBottom:"4px" } }, c.name),
-          h("p", { style: { fontSize:"13px", color:"#888", marginBottom:"8px" } }, `${voted}/${images.length} reviewed · `, h("span", { style: { color:"#22c55e" } }, `♥ ${likes}`), " · ", h("span", { style: { color:"#f59e0b" } }, `★ ${superlikes}`)),
-          h("div", { class: "progress-bar" }, h("div", { class: "progress-fill", style: { width: `${progress}%` } }))
-        ),
-        h("button", { class: "btn-remove", style: { marginLeft:"16px", fontSize:"13px", flexShrink:0 }, onclick: async (e) => { e.stopPropagation(); await db.deleteSession(c.name); state.sessions = state.sessions.filter(s => s.name !== c.name); render(); } }, "Delete")
-      );
-    }));
+  const resultsTab = sessions.length === 0
+    ? h("p", { class: "empty" }, "No client sessions yet.")
+    : state.selectedClient
+      ? buildClientDetail(state.selectedClient)
+      : h("div", null, ...sessions.map(c => {
+          const voted = Object.keys(c.votes || {}).length;
+          const likes = Object.values(c.votes || {}).filter(v => v === "like").length;
+          const superlikes = Object.values(c.votes || {}).filter(v => v === "superlike").length;
+          const progress = images.length ? Math.round((voted / images.length) * 100) : 0;
+          return h("div", { class: "session-row" },
+            h("div", { class: "session-row-content", onclick: () => { state.selectedClient = c; render(); } },
+              h("p", { style: { fontWeight:"500", fontSize:"15px", marginBottom:"4px" } }, c.name),
+              h("p", { style: { fontSize:"13px", color:"#888", marginBottom:"8px" } },
+                `${voted}/${images.length} reviewed · `,
+                h("span", { style: { color:"#22c55e" } }, `♥ ${likes}`),
+                " · ",
+                h("span", { style: { color:"#f59e0b" } }, `★ ${superlikes}`)
+              ),
+              h("div", { class: "progress-bar" }, h("div", { class: "progress-fill", style: { width:`${progress}%` } }))
+            ),
+            h("button", { class: "btn-remove", style: { marginLeft:"16px", fontSize:"13px", flexShrink:"0" }, onclick: async () => {
+              await db.deleteSession(c.name);
+              state.sessions = state.sessions.filter(s => s.name !== c.name);
+              render();
+            }}, "Delete")
+          );
+        }));
 
   return h("div", { class: "page-wide" },
     h("div", { class: "flex-between" },
@@ -295,7 +307,9 @@ function buildDropZone() {
   zone.addEventListener("drop", e => { e.preventDefault(); state.dragOver = false; processFiles(e.dataTransfer.files); });
   const labelInput = h("input", { type: "text", placeholder: "Label for next upload (optional)", value: state.uploadLabel });
   labelInput.addEventListener("input", e => state.uploadLabel = e.target.value);
-  return h("div", null, zone, labelInput, state.uploadError ? h("p", { class: "error", style: { marginTop:"8px" } }, state.uploadError) : null);
+  return h("div", null, zone, labelInput,
+    state.uploadError ? h("p", { class: "error", style: { marginTop:"8px" } }, state.uploadError) : null
+  );
 }
 
 function buildImageCard(img) {
@@ -318,12 +332,16 @@ function buildImageCard(img) {
 
 function buildClientDetail(client) {
   const images = state.images;
-  const meta = { superlike: { label: "★ Super like", color: "#f59e0b" }, like: { label: "♥ Like", color: "#22c55e" }, dislike: { label: "✕ Dislike", color: "#ef4444" } };
+  const meta = {
+    superlike: { label: "★ Super like", color: "#f59e0b" },
+    like: { label: "♥ Like", color: "#22c55e" },
+    dislike: { label: "✕ Dislike", color: "#ef4444" }
+  };
   const sections = ["superlike", "like", "dislike"].map(vote => {
     const voted = images.filter(img => client.votes?.[img.id] === vote);
     if (!voted.length) return null;
     return h("div", { style: { marginBottom:"1.5rem" } },
-      h("p", { style: { fontSize:"13px", fontWeight:"500", color: meta[vote].color, marginBottom:"10px" } }, `${meta[vote].label} (${voted.length})`),
+      h("p", { style: { fontSize:"13px", fontWeight:"500", color:meta[vote].color, marginBottom:"10px" } }, `${meta[vote].label} (${voted.length})`),
       h("div", { style: { display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(120px, 1fr))", gap:"8px" } },
         ...voted.map(img => h("div", { style: { borderRadius:"8px", overflow:"hidden", border:`1px solid ${meta[vote].color}40` } },
           h("div", { style: { height:"90px" } }, h("img", { src: img.url, alt: img.label || "", style: { width:"100%", height:"100%", objectFit:"cover" } })),
@@ -332,7 +350,6 @@ function buildClientDetail(client) {
       )
     );
   }).filter(Boolean);
-
   return h("div", null,
     h("button", { class: "btn-outline", style: { marginBottom:"1.5rem" }, onclick: () => { state.selectedClient = null; render(); } }, "← All clients"),
     h("h2", { style: { fontSize:"18px", fontWeight:"500", marginBottom:"4px" } }, client.name),
@@ -344,89 +361,72 @@ function buildClientDetail(client) {
 
 function buildPreview() {
   const img = state.previewImg;
-  const overlay = h("div", { class: "modal-overlay", onclick: () => { state.previewImg = null; render(); } },
+  return h("div", { class: "modal-overlay", onclick: () => { state.previewImg = null; render(); } },
     h("div", { class: "modal-inner", onclick: e => e.stopPropagation() },
       h("img", { src: img.url, alt: img.label || "" }),
       img.label ? h("p", { style: { color:"#fff", textAlign:"center", marginTop:"12px", fontSize:"15px", fontWeight:"500" } }, img.label) : null,
       h("button", { class: "modal-close", onclick: () => { state.previewImg = null; render(); } }, "✕")
     )
   );
-  return overlay;
 }
 
 function buildSwipe() {
-  const images = state.images;
   const session = state.session;
-  const pending = images.filter(img => !(img.id in (session.votes || {})));
-
+  const pending = state.images.filter(img => !(img.id in (session.votes || {})));
   if (state.done || pending.length === 0) return buildDone();
 
   const current = pending[0];
-
   const stack = h("div", { class: "card-stack" });
 
+  // Background cards
   pending.slice(1, 3).reverse().forEach((img, i) => {
-    const card = h("div", { class: "swipe-card", style: { transform: `scale(${0.94 + i * 0.03}) translateY(${(1 - i) * 12}px)`, zIndex: i, transition: "transform 0.2s" } },
+    stack.appendChild(h("div", { class: "swipe-card", style: { transform:`scale(${0.94 + i * 0.03}) translateY(${(1-i)*12}px)`, zIndex:i } },
       h("img", { src: img.url, alt: img.label || "" })
-    );
-    stack.appendChild(card);
+    ));
   });
 
-  const badgeLike = h("div", { class: "badge-like", style: { opacity: 0 } }, "LIKE");
-  const badgeNope = h("div", { class: "badge-nope", style: { opacity: 0 } }, "NOPE");
-
-  const topCard = h("div", { class: "swipe-card", style: { zIndex: 10, cursor: "grab", willChange: "transform" } },
+  const badgeLike = h("div", { class: "badge-like" }, "LIKE");
+  const badgeNope = h("div", { class: "badge-nope" }, "NOPE");
+  const topCard = h("div", { class: "swipe-card", style: { zIndex:10, cursor:"grab", willChange:"transform" } },
     h("img", { src: current.url, alt: current.label || "" }),
     current.label ? h("div", { class: "swipe-label-overlay" }, h("p", null, current.label)) : null,
-    badgeLike,
-    badgeNope
+    badgeLike, badgeNope
   );
-
   activeTopCard = topCard;
 
-  const updateCardTransform = (dx) => {
-    const rot = dx / 20;
-    topCard.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
-    topCard.style.transition = "none";
-    badgeLike.style.opacity = Math.min(1, Math.max(0, dx / 80));
-    badgeNope.style.opacity = Math.min(1, Math.max(0, -dx / 80));
+  const updateDrag = (dx) => {
+    topCard.style.transform = `translateX(${dx}px) rotate(${dx/20}deg)`;
+    badgeLike.style.opacity = Math.min(1, Math.max(0, dx/80));
+    badgeNope.style.opacity = Math.min(1, Math.max(0, -dx/80));
   };
 
-  const onStart = (clientX) => {
-    dragStartX = clientX;
-    state.dragging = true;
-    topCard.style.cursor = "grabbing";
-  };
+  topCard.addEventListener("mousedown", e => { dragStartX = e.clientX; isDragging = true; topCard.style.cursor = "grabbing"; });
+  topCard.addEventListener("touchstart", e => { e.preventDefault(); dragStartX = e.touches[0].clientX; isDragging = true; }, { passive: false });
 
   const onMove = (clientX) => {
-    if (!state.dragging) return;
-    const dx = clientX - dragStartX;
+    if (!isDragging) return;
+    currentDragX = clientX - dragStartX;
     if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => updateCardTransform(dx));
-    state.dragX = dx;
+    rafId = requestAnimationFrame(() => updateDrag(currentDragX));
   };
-
   const onEnd = () => {
-    if (!state.dragging) return;
-    state.dragging = false;
+    if (!isDragging) return;
+    isDragging = false;
     topCard.style.cursor = "grab";
-    if (state.dragX > SWIPE_THRESHOLD) handleSwipe("like");
-    else if (state.dragX < -SWIPE_THRESHOLD) handleSwipe("dislike");
+    if (currentDragX > SWIPE_THRESHOLD) swipeOut("like");
+    else if (currentDragX < -SWIPE_THRESHOLD) swipeOut("dislike");
     else {
       topCard.style.transition = "transform 0.3s";
       topCard.style.transform = "translateX(0) rotate(0deg)";
-      badgeLike.style.opacity = 0;
-      badgeNope.style.opacity = 0;
-      state.dragX = 0;
+      badgeLike.style.opacity = 0; badgeNope.style.opacity = 0;
+      currentDragX = 0;
     }
   };
 
-  topCard.addEventListener("mousedown", e => onStart(e.clientX));
-  topCard.addEventListener("touchstart", e => { e.preventDefault(); onStart(e.touches[0].clientX); }, { passive: false });
   window.addEventListener("mousemove", e => onMove(e.clientX));
   window.addEventListener("touchmove", e => onMove(e.touches[0].clientX), { passive: true });
-  window.addEventListener("mouseup", onEnd);
-  window.addEventListener("touchend", onEnd);
+  window.addEventListener("mouseup", onEnd, { once: true });
+  window.addEventListener("touchend", onEnd, { once: true });
 
   stack.appendChild(topCard);
 
@@ -437,9 +437,9 @@ function buildSwipe() {
     ),
     stack,
     h("div", { class: "swipe-actions" },
-      h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px" }, onclick: () => handleSwipe("dislike") }, "✕"),
-      h("button", { class: "btn-circle btn-outline", style: { width:"62px", height:"62px", fontSize:"22px", borderColor: session.super_like_used ? "#ddd" : "#f59e0b", color: session.super_like_used ? "#ccc" : "#f59e0b", opacity: session.super_like_used ? 0.3 : 1 }, disabled: session.super_like_used, onclick: handleSuperLike }, "★"),
-      h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px", borderColor:"#22c55e", color:"#22c55e" }, onclick: () => handleSwipe("like") }, "♥")
+      h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px" }, onclick: () => swipeOut("dislike") }, "✕"),
+      h("button", { class: "btn-circle btn-outline", style: { width:"62px", height:"62px", fontSize:"22px", borderColor:session.super_like_used?"#ddd":"#f59e0b", color:session.super_like_used?"#ccc":"#f59e0b", opacity:session.super_like_used?0.3:1 }, disabled: session.super_like_used, onclick: () => swipeOut("superlike") }, "★"),
+      h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px", borderColor:"#22c55e", color:"#22c55e" }, onclick: () => swipeOut("like") }, "♥")
     ),
     session.super_like_used ? h("p", { style: { textAlign:"center", fontSize:"12px", color:"#aaa", marginTop:"10px" } }, "Super like used") : null
   );
@@ -454,12 +454,10 @@ function buildDone() {
   );
 }
 
-function handleSwipe(dir) {
+function swipeOut(dir) {
   const session = state.session;
   const pending = state.images.filter(img => !(img.id in (session.votes || {})));
   const img = pending[0]; if (!img) return;
-
-  // Animate card out directly on the DOM node
   if (activeTopCard) {
     const tx = dir === "like" ? 600 : dir === "dislike" ? -600 : 0;
     const ty = dir === "superlike" ? -600 : 0;
@@ -468,80 +466,24 @@ function handleSwipe(dir) {
     activeTopCard.style.transform = `translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg)`;
     activeTopCard.style.opacity = "0";
   }
-
   setTimeout(async () => {
+    if (dir === "superlike") { session.super_like_used = true; session.super_liked = img.id; }
     session.votes[img.id] = dir;
-    state.dragX = 0; state.swipeAnim = null; activeTopCard = null;
+    currentDragX = 0; activeTopCard = null;
     await db.upsertSession(session);
     state.sessions = state.sessions.map(s => s.name === session.name ? session : s);
-    const remaining = state.images.filter(i => !(session.votes[i.id]));
-    if (remaining.length === 0) state.done = true;
+    if (state.images.filter(i => !session.votes[i.id]).length === 0) state.done = true;
     render();
   }, 320);
 }
 
-function handleSuperLike() {
-  const session = state.session;
-  if (session.super_like_used) return;
-  const pending = state.images.filter(img => !(img.id in (session.votes || {})));
-  const img = pending[0]; if (!img) return;
-
-  if (activeTopCard) {
-    activeTopCard.style.transition = "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s";
-    activeTopCard.style.transform = "translateX(0) translateY(-600px)";
-    activeTopCard.style.opacity = "0";
-  }
-
-  setTimeout(async () => {
-    session.super_like_used = true; session.super_liked = img.id; session.votes[img.id] = "superlike";
-    state.dragX = 0; state.swipeAnim = null; activeTopCard = null;
-    await db.upsertSession(session);
-    state.sessions = state.sessions.map(s => s.name === session.name ? session : s);
-    const remaining = state.images.filter(i => !(session.votes[i.id]));
-    if (remaining.length === 0) state.done = true;
-    render();
-  }, 320);
-}
+async function startSession() {
   const name = state.clientName.trim();
   if (!name) { state.nameError = "Please enter your name."; render(); return; }
   const existing = state.sessions.find(s => s.name === name);
   const s = existing || { name, votes: {}, super_liked: null, super_like_used: false, started_at: Date.now() };
   if (!existing) { await db.upsertSession(s); state.sessions.push(s); }
   state.session = s; state.done = false; state.view = "swipe"; render();
-}
-
-function handleSwipe(dir) {
-  const session = state.session;
-  const pending = state.images.filter(img => !(img.id in (session.votes || {})));
-  const img = pending[0]; if (!img) return;
-  state.swipeAnim = dir;
-  render();
-  setTimeout(async () => {
-    session.votes[img.id] = dir;
-    state.swipeAnim = null; state.dragX = 0;
-    await db.upsertSession(session);
-    state.sessions = state.sessions.map(s => s.name === session.name ? session : s);
-    const remaining = state.images.filter(i => !(session.votes[i.id]));
-    if (remaining.length === 0) state.done = true;
-    render();
-  }, 320);
-}
-
-function handleSuperLike() {
-  const session = state.session;
-  if (session.super_like_used) return;
-  const pending = state.images.filter(img => !(img.id in (session.votes || {})));
-  const img = pending[0]; if (!img) return;
-  state.swipeAnim = "superlike"; render();
-  setTimeout(async () => {
-    session.super_like_used = true; session.super_liked = img.id; session.votes[img.id] = "superlike";
-    state.swipeAnim = null; state.dragX = 0;
-    await db.upsertSession(session);
-    state.sessions = state.sessions.map(s => s.name === session.name ? session : s);
-    const remaining = state.images.filter(i => !(session.votes[i.id]));
-    if (remaining.length === 0) state.done = true;
-    render();
-  }, 320);
 }
 
 async function processFiles(files) {
