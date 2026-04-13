@@ -2,25 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Datassist — Inspiration Swiper</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    html, body { overflow: hidden; height: 100%; position: fixed; width: 100%; }
-    #app { overflow-y: auto; height: 100vh; -webkit-overflow-scrolling: touch; }
-    body { font-family: 'Afacad Flux', sans-serif; background: #fff; color: #111; min-height: 100vh; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body { font-family: 'Afacad Flux', sans-serif; background: #fff; color: #111; height: 100%; overflow-x: hidden; overscroll-behavior: none; }
+    #app { width: 100%; max-width: 100vw; overflow-x: hidden; }
     input, button { font-family: inherit; font-size: 15px; outline: none; }
     input { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #111; }
     input:focus { border-color: #999; }
-    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #111; padding: 9px 18px; transition: background 0.15s, opacity 0.15s; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-    button:hover { background: #f5f5f5; }
-    button:active { transform: scale(0.98); }
+    button { cursor: pointer; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #111; padding: 9px 18px; transition: background 0.15s; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+    button:active { background: #f0f0f0; }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
     label { font-size: 13px; color: #666; display: block; margin-bottom: 6px; }
-    .page { max-width: 460px; margin: 0 auto; padding: 3rem 1.5rem 2rem; }
-    .page-wide { max-width: 740px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .page { max-width: 460px; width: 100%; margin: 0 auto; padding: 3rem 1.25rem 2rem; box-sizing: border-box; }
+    .page-wide { max-width: 740px; width: 100%; margin: 0 auto; padding: 2rem 1.25rem; box-sizing: border-box; }
     .brand { font-size: 11px; letter-spacing: 0.1em; color: #aaa; text-transform: uppercase; margin-bottom: 8px; }
     .title { font-size: 26px; font-weight: 500; margin-bottom: 8px; }
     .subtitle { font-size: 15px; color: #666; line-height: 1.6; }
@@ -30,52 +30,52 @@
     .error { font-size: 13px; color: #dc2626; margin-top: 6px; }
     .muted { color: #aaa; font-size: 13px; }
     .btn-primary { background: #111; color: #fff; border-color: #111; width: 100%; padding: 11px; font-size: 15px; }
-    .btn-primary:hover { background: #333; }
+    .btn-primary:active { background: #333; }
     .btn-outline { background: #fff; border: 1px solid #ddd; }
-    .grid-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
+    .grid-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
     .img-card { border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; }
     .img-card-thumb { height: 120px; overflow: hidden; cursor: zoom-in; }
-    .img-card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
-    .img-card-thumb:hover img { transform: scale(1.03); }
+    .img-card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .img-card-info { padding: 10px 12px; }
     .img-label { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 6px; }
     .img-stats { display: flex; gap: 8px; font-size: 12px; margin-bottom: 8px; }
-    .btn-remove { font-size: 12px; color: #dc2626; background: none; border: none; padding: 0; cursor: pointer; }
+    .btn-remove { font-size: 12px; color: #dc2626; background: none; border: none; padding: 0; cursor: pointer; touch-action: manipulation; }
     .drop-zone { border: 1.5px dashed #ccc; border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.15s; margin-bottom: 12px; }
-    .drop-zone:hover, .drop-zone.over { border-color: #888; background: #fafafa; }
+    .drop-zone.over { border-color: #888; background: #fafafa; }
     .drop-zone p:first-child { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
     .drop-zone p:last-child { font-size: 13px; color: #888; }
     .tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e5e5; margin-bottom: 1.5rem; }
     .tab { background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 16px; font-size: 14px; color: #888; margin-bottom: -1px; }
-    .tab:hover { background: none; color: #111; }
     .tab.active { color: #111; font-weight: 500; border-bottom-color: #111; }
     .session-row { border: 1px solid #e5e5e5; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .session-row-content { flex: 1; cursor: pointer; }
+    .session-row-content { flex: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .progress-bar { height: 4px; background: #f0f0f0; border-radius: 4px; margin-top: 8px; }
-    .progress-fill { height: 100%; background: #111; border-radius: 4px; transition: width 0.3s; }
-    .swipe-page { max-width: 440px; margin: 0 auto; padding: 2rem 1.5rem; }
-    .card-stack { position: relative; height: 560px; margin-bottom: 1.5rem; touch-action: none; user-select: none; }
-    .swipe-card { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: #f5f5f5; }
-    .swipe-card img { width: 100%; height: 100%; object-fit: contain; object-position: center; pointer-events: none; background: #f5f5f5; display: block; }
-    .swipe-label-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 1rem 1rem; background: linear-gradient(transparent, rgba(0,0,0,0.55)); }
+    .progress-fill { height: 100%; background: #111; border-radius: 4px; }
+    /* Swipe layout — fills viewport safely */
+    .swipe-page { display: flex; flex-direction: column; width: 100%; max-width: 440px; margin: 0 auto; padding: 0 1.25rem; height: 95vh; overflow: hidden; }
+    .swipe-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0 0.75rem; flex-shrink: 0; }
+    .card-stack { position: relative; flex: 1; min-height: 0; touch-action: none; }
+    .swipe-card { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5e5; background: #f5f5f5; will-change: transform; }
+    .swipe-card-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; background: #f5f5f5; pointer-events: none; -webkit-user-drag: none; }
+    .swipe-label-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 1rem 1rem; background: linear-gradient(transparent, rgba(0,0,0,0.55)); pointer-events: none; }
     .swipe-label-overlay p { color: #fff; font-size: 14px; font-weight: 500; }
-    .badge-like, .badge-nope { position: absolute; top: 16px; padding: 5px 14px; color: #fff; border-radius: 8px; font-size: 14px; font-weight: 500; pointer-events: none; opacity: 0; }
+    .badge-like, .badge-nope { position: absolute; top: 16px; padding: 5px 14px; color: #fff; border-radius: 8px; font-size: 14px; font-weight: 600; pointer-events: none; opacity: 0; transition: opacity 0.05s; }
     .badge-like { left: 16px; background: #22c55e; }
     .badge-nope { right: 16px; background: #ef4444; }
-    .swipe-actions { display: flex; gap: 14px; justify-content: center; align-items: center; }
-    .btn-circle { border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; cursor: zoom-out; }
+    .swipe-actions { display: flex; gap: 14px; justify-content: center; align-items: center; padding: 1rem 0 0.5rem; flex-shrink: 0; }
+    .btn-circle { border-radius: 50% !important; padding: 0 !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; -webkit-tap-highlight-color: transparent; }
     .modal-inner { position: relative; max-width: 820px; width: 100%; }
     .modal-inner img { width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; display: block; }
-    .modal-close { position: absolute; top: -16px; right: -16px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .modal-close:hover { background: rgba(255,255,255,0.25); }
+    .modal-close { position: absolute; top: -16px; right: -16px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
     .empty { color: #aaa; font-size: 14px; text-align: center; padding: 3rem 0; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
     .badge { display: inline-block; padding: 3px 10px; border-radius: 8px; background: #f0f0f0; font-size: 13px; }
     @media (max-width: 480px) {
-      .page, .swipe-page { padding: 2rem 1rem 1.5rem; }
-      .page-wide { padding: 1.5rem 1rem; }
+      .page { padding: 1.5rem 1rem; }
+      .page-wide { padding: 1rem; }
       .grid-images { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+      .swipe-page { padding: 0 1rem; }
     }
   </style>
 </head>
@@ -86,15 +86,15 @@ const SUPABASE_URL = "https://sxvqmhetammwyrdjyseq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4dnFtaGV0YW1td3lyZGp5c2VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDU1NTMsImV4cCI6MjA5MTY4MTU1M30.1GXKNEi9OJLLYeKwFXyMZRtKeG0Q6b0nWqsgZjqSGwY";
 const BUCKET = "inspiration";
 const DASH_PASS = "magik2024";
-const SWIPE_THRESHOLD = 80;
+const SWIPE_THRESHOLD = 70;
 
 const h = (tag, attrs, ...children) => {
   const el = document.createElement(tag);
   if (attrs) Object.entries(attrs).forEach(([k, v]) => {
     if (k === "class") el.className = v;
-    else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2).toLowerCase(), v);
     else if (k === "style" && typeof v === "object") Object.assign(el.style, v);
-    else el.setAttribute(k, v);
+    else if (v !== false && v !== null && v !== undefined) el.setAttribute(k, v);
   });
   children.flat(Infinity).forEach(c => { if (c != null && c !== false) el.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
   return el;
@@ -106,10 +106,10 @@ const api = async (path, opts = {}) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, 
 });
 
 const db = {
-  async getImages() { const r = await api("images?order=added_at.asc"); return r.ok ? r.json() : []; },
+  async getImages() { try { const r = await api("images?order=added_at.asc"); return r.ok ? r.json() : []; } catch { return []; } },
   async addImage(img) { await api("images", { method: "POST", body: JSON.stringify(img), prefer: "return=minimal" }); },
   async removeImage(id) { await api(`images?id=eq.${id}`, { method: "DELETE" }); },
-  async getSessions() { const r = await api("sessions?order=started_at.asc"); return r.ok ? r.json() : []; },
+  async getSessions() { try { const r = await api("sessions?order=started_at.asc"); return r.ok ? r.json() : []; } catch { return []; } },
   async upsertSession(s) { await api("sessions", { method: "POST", body: JSON.stringify(s), prefer: "resolution=merge-duplicates,return=minimal" }); },
   async deleteSession(name) { await api(`sessions?name=eq.${encodeURIComponent(name)}`, { method: "DELETE" }); },
   async uploadImage(blob, id) {
@@ -150,11 +150,8 @@ let state = {
   loadError: "", loading: true
 };
 
-let activeTopCard = null;
-let dragStartX = null;
-let isDragging = false;
-let currentDragX = 0;
-let rafId = null;
+// Swipe state — kept outside render cycle
+let swipe = { active: false, startX: 0, startY: 0, dx: 0, cardEl: null, likeEl: null, nopeEl: null, raf: null, locked: false };
 
 const app = document.getElementById("app");
 function render() { app.innerHTML = ""; app.appendChild(buildView()); }
@@ -168,13 +165,13 @@ async function init() {
   try { await reload(); state.loading = false; }
   catch(e) { state.loadError = "Cannot connect: " + e.message; state.loading = false; }
   render();
-  setInterval(async () => { await reload(); if (state.view !== "swipe") render(); }, 4000);
+  setInterval(async () => { await reload(); if (state.view !== "swipe") render(); }, 5000);
 }
 
 function buildView() {
-  if (state.loading) return h("div", { style: { display:"flex", alignItems:"center", justifyContent:"center", minHeight:"300px", flexDirection:"column", gap:"12px" } },
-    h("p", { class: "muted" }, "Connecting to database…"),
-    state.loadError ? h("p", { class: "error", style: { textAlign:"center", maxWidth:"300px" } }, state.loadError) : null
+  if (state.loading) return h("div", { style: { display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", flexDirection:"column", gap:"12px" } },
+    h("p", { class: "muted" }, "Connecting…"),
+    state.loadError ? h("p", { class: "error", style: { textAlign:"center", maxWidth:"300px", padding:"0 1rem" } }, state.loadError) : null
   );
   const overlay = state.previewImg ? buildPreview() : null;
   let page;
@@ -189,7 +186,7 @@ function buildView() {
 }
 
 function buildHome() {
-  const nameInput = h("input", { type: "text", placeholder: "e.g. Sarah Johnson", value: state.clientName });
+  const nameInput = h("input", { type: "text", placeholder: "e.g. Sarah Johnson", value: state.clientName, autocomplete: "name" });
   nameInput.addEventListener("input", e => { state.clientName = e.target.value; state.nameError = ""; });
   nameInput.addEventListener("keydown", e => e.key === "Enter" && startSession());
   return h("div", { class: "page" },
@@ -211,7 +208,7 @@ function buildHome() {
 }
 
 function buildDashlock() {
-  const passInput = h("input", { type: "password", placeholder: "Enter password", value: state.dashPass });
+  const passInput = h("input", { type: "password", placeholder: "Enter password" });
   passInput.addEventListener("input", e => { state.dashPass = e.target.value; state.dashError = ""; });
   passInput.addEventListener("keydown", e => e.key === "Enter" && enterDash());
   return h("div", { class: "page" },
@@ -233,54 +230,36 @@ function enterDash() {
 }
 
 function buildDashboard() {
-  const images = state.images;
-  const sessions = state.sessions;
-
+  const images = state.images, sessions = state.sessions;
   const imagesTab = h("div", null,
     h("div", { class: "card", style: { marginBottom:"1.5rem" } },
       h("div", { class: "card-header" }, "Upload images"),
       h("div", { class: "card-body" }, buildDropZone())
     ),
-    images.length === 0
-      ? h("p", { class: "empty" }, "No images yet. Upload some above.")
-      : h("div", null,
-          h("div", { style: { display:"flex", justifyContent:"flex-end", marginBottom:"12px" } },
-            h("button", { class: "btn-outline", onclick: downloadAll, disabled: state.downloading },
-              state.downloading ? "Preparing zip…" : `Download all (${images.length})`
-            )
-          ),
-          h("div", { class: "grid-images" }, ...images.map(buildImageCard))
-        )
+    images.length === 0 ? h("p", { class: "empty" }, "No images yet. Upload some above.") :
+    h("div", null,
+      h("div", { style: { display:"flex", justifyContent:"flex-end", marginBottom:"12px" } },
+        h("button", { class: "btn-outline", onclick: downloadAll, disabled: state.downloading }, state.downloading ? "Preparing zip…" : `Download all (${images.length})`)
+      ),
+      h("div", { class: "grid-images" }, ...images.map(buildImageCard))
+    )
   );
-
-  const resultsTab = sessions.length === 0
-    ? h("p", { class: "empty" }, "No client sessions yet.")
-    : state.selectedClient
-      ? buildClientDetail(state.selectedClient)
-      : h("div", null, ...sessions.map(c => {
-          const voted = Object.keys(c.votes || {}).length;
-          const likes = Object.values(c.votes || {}).filter(v => v === "like").length;
-          const superlikes = Object.values(c.votes || {}).filter(v => v === "superlike").length;
-          const progress = images.length ? Math.round((voted / images.length) * 100) : 0;
-          return h("div", { class: "session-row" },
-            h("div", { class: "session-row-content", onclick: () => { state.selectedClient = c; render(); } },
-              h("p", { style: { fontWeight:"500", fontSize:"15px", marginBottom:"4px" } }, c.name),
-              h("p", { style: { fontSize:"13px", color:"#888", marginBottom:"8px" } },
-                `${voted}/${images.length} reviewed · `,
-                h("span", { style: { color:"#22c55e" } }, `♥ ${likes}`),
-                " · ",
-                h("span", { style: { color:"#f59e0b" } }, `★ ${superlikes}`)
-              ),
-              h("div", { class: "progress-bar" }, h("div", { class: "progress-fill", style: { width:`${progress}%` } }))
-            ),
-            h("button", { class: "btn-remove", style: { marginLeft:"16px", fontSize:"13px", flexShrink:"0" }, onclick: async () => {
-              await db.deleteSession(c.name);
-              state.sessions = state.sessions.filter(s => s.name !== c.name);
-              render();
-            }}, "Delete")
-          );
-        }));
-
+  const resultsTab = sessions.length === 0 ? h("p", { class: "empty" }, "No client sessions yet.") :
+    state.selectedClient ? buildClientDetail(state.selectedClient) :
+    h("div", null, ...sessions.map(c => {
+      const voted = Object.keys(c.votes || {}).length;
+      const likes = Object.values(c.votes || {}).filter(v => v === "like").length;
+      const superlikes = Object.values(c.votes || {}).filter(v => v === "superlike").length;
+      const progress = images.length ? Math.round((voted / images.length) * 100) : 0;
+      return h("div", { class: "session-row" },
+        h("div", { class: "session-row-content", onclick: () => { state.selectedClient = c; render(); } },
+          h("p", { style: { fontWeight:"500", fontSize:"15px", marginBottom:"4px" } }, c.name),
+          h("p", { style: { fontSize:"13px", color:"#888", marginBottom:"8px" } }, `${voted}/${images.length} reviewed · `, h("span", { style: { color:"#22c55e" } }, `♥ ${likes}`), " · ", h("span", { style: { color:"#f59e0b" } }, `★ ${superlikes}`)),
+          h("div", { class: "progress-bar" }, h("div", { class: "progress-fill", style: { width:`${progress}%` } }))
+        ),
+        h("button", { class: "btn-remove", style: { marginLeft:"16px", fontSize:"13px" }, onclick: async () => { await db.deleteSession(c.name); state.sessions = state.sessions.filter(s => s.name !== c.name); render(); } }, "Delete")
+      );
+    }));
   return h("div", { class: "page-wide" },
     h("div", { class: "flex-between" },
       h("div", null, h("p", { class: "brand" }, "Datassist"), h("h1", { style: { fontSize:"22px", fontWeight:"500" } }, "Dashboard")),
@@ -297,35 +276,26 @@ function buildDashboard() {
 function buildDropZone() {
   const fileInput = h("input", { type: "file", accept: "image/*", multiple: true, style: { display:"none" } });
   fileInput.addEventListener("change", e => processFiles(e.target.files));
-  const zone = h("div", { class: `drop-zone${state.dragOver ? " over" : ""}` },
-    fileInput,
+  const zone = h("div", { class: "drop-zone" }, fileInput,
     h("p", null, state.uploading ? "Uploading…" : "Drop images here"),
-    h("p", null, "or click to browse · JPG, PNG, WEBP · auto-compressed")
+    h("p", null, "or click to browse · JPG, PNG, WEBP")
   );
   zone.addEventListener("click", () => fileInput.click());
-  zone.addEventListener("dragover", e => { e.preventDefault(); state.dragOver = true; render(); });
-  zone.addEventListener("dragleave", () => { state.dragOver = false; render(); });
-  zone.addEventListener("drop", e => { e.preventDefault(); state.dragOver = false; processFiles(e.dataTransfer.files); });
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("over"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+  zone.addEventListener("drop", e => { e.preventDefault(); zone.classList.remove("over"); processFiles(e.dataTransfer.files); });
   const labelInput = h("input", { type: "text", placeholder: "Label for next upload (optional)", value: state.uploadLabel });
   labelInput.addEventListener("input", e => state.uploadLabel = e.target.value);
-  return h("div", null, zone, labelInput,
-    state.uploadError ? h("p", { class: "error", style: { marginTop:"8px" } }, state.uploadError) : null
-  );
+  return h("div", null, zone, labelInput, state.uploadError ? h("p", { class: "error", style: { marginTop:"8px" } }, state.uploadError) : null);
 }
 
 function buildImageCard(img) {
   const s = getStats(img.id);
   return h("div", { class: "img-card" },
-    h("div", { class: "img-card-thumb", onclick: () => { state.previewImg = img; render(); } },
-      h("img", { src: img.url, alt: img.label || "" })
-    ),
+    h("div", { class: "img-card-thumb", onclick: () => { state.previewImg = img; render(); } }, h("img", { src: img.url, alt: img.label || "" })),
     h("div", { class: "img-card-info" },
       img.label ? h("p", { class: "img-label" }, img.label) : null,
-      h("div", { class: "img-stats" },
-        h("span", { style: { color:"#22c55e" } }, `♥ ${s.likes}`),
-        h("span", { style: { color:"#ef4444" } }, `✕ ${s.dislikes}`),
-        h("span", { style: { color:"#f59e0b" } }, `★ ${s.superlikes}`)
-      ),
+      h("div", { class: "img-stats" }, h("span", { style: { color:"#22c55e" } }, `♥ ${s.likes}`), h("span", { style: { color:"#ef4444" } }, `✕ ${s.dislikes}`), h("span", { style: { color:"#f59e0b" } }, `★ ${s.superlikes}`)),
       h("button", { class: "btn-remove", onclick: () => removeImage(img.id) }, "Remove")
     )
   );
@@ -333,19 +303,15 @@ function buildImageCard(img) {
 
 function buildClientDetail(client) {
   const images = state.images;
-  const meta = {
-    superlike: { label: "★ Super like", color: "#f59e0b" },
-    like: { label: "♥ Like", color: "#22c55e" },
-    dislike: { label: "✕ Dislike", color: "#ef4444" }
-  };
+  const meta = { superlike: { label: "★ Super like", color: "#f59e0b" }, like: { label: "♥ Like", color: "#22c55e" }, dislike: { label: "✕ Dislike", color: "#ef4444" } };
   const sections = ["superlike", "like", "dislike"].map(vote => {
     const voted = images.filter(img => client.votes?.[img.id] === vote);
     if (!voted.length) return null;
     return h("div", { style: { marginBottom:"1.5rem" } },
       h("p", { style: { fontSize:"13px", fontWeight:"500", color:meta[vote].color, marginBottom:"10px" } }, `${meta[vote].label} (${voted.length})`),
-      h("div", { style: { display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(120px, 1fr))", gap:"8px" } },
+      h("div", { style: { display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(110px, 1fr))", gap:"8px" } },
         ...voted.map(img => h("div", { style: { borderRadius:"8px", overflow:"hidden", border:`1px solid ${meta[vote].color}40` } },
-          h("div", { style: { height:"90px" } }, h("img", { src: img.url, alt: img.label || "", style: { width:"100%", height:"100%", objectFit:"cover" } })),
+          h("div", { style: { height:"90px" } }, h("img", { src: img.url, alt: img.label || "", style: { width:"100%", height:"100%", objectFit:"cover", display:"block" } })),
           img.label ? h("p", { style: { fontSize:"11px", padding:"6px 8px", color:"#888", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" } }, img.label) : null
         ))
       )
@@ -377,85 +343,103 @@ function buildSwipe() {
   if (state.done || pending.length === 0) return buildDone();
 
   const current = pending[0];
-  const stack = h("div", { class: "card-stack" });
 
-  // Background cards
+  // Stack background cards
+  const stack = h("div", { class: "card-stack" });
   pending.slice(1, 3).reverse().forEach((img, i) => {
-    stack.appendChild(h("div", { class: "swipe-card", style: { transform:`scale(${0.94 + i * 0.03}) translateY(${(1-i)*12}px)`, zIndex:i } },
-      h("img", { src: img.url, alt: img.label || "" })
+    stack.appendChild(h("div", { class: "swipe-card", style: { transform:`scale(${0.94 + i*0.03}) translateY(${(1-i)*10}px)`, zIndex:i, willChange:"auto" } },
+      h("img", { class: "swipe-card-img", src: img.url, alt: "" })
     ));
   });
 
+  // Top card
   const badgeLike = h("div", { class: "badge-like" }, "LIKE");
   const badgeNope = h("div", { class: "badge-nope" }, "NOPE");
-  const topCard = h("div", { class: "swipe-card", style: { zIndex:10, cursor:"grab", willChange:"transform" } },
-    h("img", { src: current.url, alt: current.label || "" }),
+  const topCard = h("div", { class: "swipe-card", style: { zIndex:10 } },
+    h("img", { class: "swipe-card-img", src: current.url, alt: current.label || "" }),
     current.label ? h("div", { class: "swipe-label-overlay" }, h("p", null, current.label)) : null,
     badgeLike, badgeNope
   );
-  activeTopCard = topCard;
+  stack.appendChild(topCard);
 
-  const updateDrag = (dx) => {
-    topCard.style.transform = `translateX(${dx}px) rotate(${dx/20}deg)`;
-    badgeLike.style.opacity = Math.min(1, Math.max(0, dx/80));
-    badgeNope.style.opacity = Math.min(1, Math.max(0, -dx/80));
+  // Store refs for direct manipulation
+  swipe.cardEl = topCard;
+  swipe.likeEl = badgeLike;
+  swipe.nopeEl = badgeNope;
+  swipe.active = false;
+  swipe.locked = false;
+  swipe.dx = 0;
+
+  const getClientX = e => e.touches ? e.touches[0].clientX : e.clientX;
+  const getClientY = e => e.touches ? e.touches[0].clientY : e.clientY;
+
+  const onStart = e => {
+    if (swipe.locked) return;
+    swipe.active = true;
+    swipe.startX = getClientX(e);
+    swipe.startY = getClientY(e);
+    swipe.dx = 0;
+    topCard.style.transition = "none";
   };
 
-  const dragArea = topCard.querySelector("img");
-  dragArea.addEventListener("mousedown", e => { dragStartX = e.clientX; isDragging = true; topCard.style.cursor = "grabbing"; });
-  dragArea.addEventListener("touchstart", e => {
-    if (e.touches.length > 1) return;
-    dragStartX = e.touches[0].clientX;
-    isDragging = true;
-  }, { passive: true });
-
-  const onMove = (clientX) => {
-    if (!isDragging) return;
-    currentDragX = clientX - dragStartX;
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => updateDrag(currentDragX));
+  const onMove = e => {
+    if (!swipe.active || swipe.locked) return;
+    const dx = getClientX(e) - swipe.startX;
+    const dy = getClientY(e) - swipe.startY;
+    // Cancel if mostly vertical scroll
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dx) < 10) { swipe.active = false; return; }
+    e.preventDefault();
+    swipe.dx = dx;
+    if (swipe.raf) cancelAnimationFrame(swipe.raf);
+    swipe.raf = requestAnimationFrame(() => {
+      topCard.style.transform = `translateX(${swipe.dx}px) rotate(${swipe.dx / 20}deg)`;
+      badgeLike.style.opacity = Math.min(1, Math.max(0, swipe.dx / 60));
+      badgeNope.style.opacity = Math.min(1, Math.max(0, -swipe.dx / 60));
+    });
   };
 
-  const onEnd = (e) => {
-    if (!isDragging) return;
-    // Ignore if touch ended on a button
-    if (e && e.target && e.target.closest && e.target.closest("button")) { isDragging = false; currentDragX = 0; return; }
-    isDragging = false;
-    topCard.style.cursor = "grab";
-    if (currentDragX > SWIPE_THRESHOLD) swipeOut("like");
-    else if (currentDragX < -SWIPE_THRESHOLD) swipeOut("dislike");
+  const onEnd = () => {
+    if (!swipe.active || swipe.locked) return;
+    swipe.active = false;
+    if (swipe.dx > SWIPE_THRESHOLD) doSwipe("like");
+    else if (swipe.dx < -SWIPE_THRESHOLD) doSwipe("dislike");
     else {
-      topCard.style.transition = "transform 0.3s";
+      topCard.style.transition = "transform 0.3s ease";
       topCard.style.transform = "translateX(0) rotate(0deg)";
-      badgeLike.style.opacity = 0; badgeNope.style.opacity = 0;
-      currentDragX = 0;
+      badgeLike.style.opacity = 0;
+      badgeNope.style.opacity = 0;
+      swipe.dx = 0;
     }
   };
 
-  const mouseMoveHandler = e => onMove(e.clientX);
-  const touchMoveHandler = e => { if (isDragging) onMove(e.touches[0].clientX); };
-  const mouseUpHandler = e => { onEnd(e); window.removeEventListener("mousemove", mouseMoveHandler); window.removeEventListener("mouseup", mouseUpHandler); };
-  const touchEndHandler = e => { onEnd(e); window.removeEventListener("touchmove", touchMoveHandler); window.removeEventListener("touchend", touchEndHandler); };
+  // Attach to card only — buttons are outside the card
+  topCard.addEventListener("mousedown", onStart);
+  topCard.addEventListener("touchstart", onStart, { passive: true });
+  topCard.addEventListener("mousemove", onMove);
+  topCard.addEventListener("touchmove", onMove, { passive: false });
+  topCard.addEventListener("mouseup", onEnd);
+  topCard.addEventListener("touchend", onEnd);
+  topCard.addEventListener("mouseleave", onEnd);
 
-  window.addEventListener("mousemove", mouseMoveHandler);
-  window.addEventListener("mouseup", mouseUpHandler);
-  window.addEventListener("touchmove", touchMoveHandler, { passive: true });
-  window.addEventListener("touchend", touchEndHandler);
+  // Action buttons — completely separate from card touch handling
+  const btnDislike = h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px" } }, "✕");
+  const btnSuper = h("button", { class: "btn-circle btn-outline", style: { width:"62px", height:"62px", fontSize:"22px", borderColor: session.super_like_used ? "#ddd" : "#f59e0b", color: session.super_like_used ? "#ccc" : "#f59e0b", opacity: session.super_like_used ? "0.35" : "1" } }, "★");
+  const btnLike = h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px", borderColor:"#22c55e", color:"#22c55e" } }, "♥");
 
-  stack.appendChild(topCard);
+  if (session.super_like_used) btnSuper.setAttribute("disabled", true);
+
+  btnDislike.addEventListener("click", () => doSwipe("dislike"));
+  btnSuper.addEventListener("click", () => doSwipe("superlike"));
+  btnLike.addEventListener("click", () => doSwipe("like"));
 
   return h("div", { class: "swipe-page" },
-    h("div", { style: { display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1.5rem" } },
+    h("div", { class: "swipe-header" },
       h("p", { class: "muted" }, `Hi, ${session.name.split(" ")[0]}`),
       h("span", { class: "badge" }, `${pending.length} left`)
     ),
     stack,
-    h("div", { class: "swipe-actions" },
-      h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px" }, onclick: () => swipeOut("dislike") }, "✕"),
-      h("button", { class: "btn-circle btn-outline", style: { width:"62px", height:"62px", fontSize:"22px", borderColor:session.super_like_used?"#ddd":"#f59e0b", color:session.super_like_used?"#ccc":"#f59e0b", opacity:session.super_like_used?0.3:1 }, disabled: session.super_like_used, onclick: () => swipeOut("superlike") }, "★"),
-      h("button", { class: "btn-circle btn-outline", style: { width:"54px", height:"54px", fontSize:"18px", borderColor:"#22c55e", color:"#22c55e" }, onclick: () => swipeOut("like") }, "♥")
-    ),
-    session.super_like_used ? h("p", { style: { textAlign:"center", fontSize:"12px", color:"#aaa", marginTop:"10px" } }, "Super like used") : null
+    h("div", { class: "swipe-actions" }, btnDislike, btnSuper, btnLike),
+    session.super_like_used ? h("p", { style: { textAlign:"center", fontSize:"12px", color:"#aaa", paddingBottom:"0.5rem" } }, "Super like used") : null
   );
 }
 
@@ -468,22 +452,25 @@ function buildDone() {
   );
 }
 
-function swipeOut(dir) {
+function doSwipe(dir) {
+  if (swipe.locked) return;
+  swipe.locked = true;
   const session = state.session;
   const pending = state.images.filter(img => !(img.id in (session.votes || {})));
   const img = pending[0]; if (!img) return;
-  if (activeTopCard) {
+  const card = swipe.cardEl;
+  if (card) {
     const tx = dir === "like" ? 600 : dir === "dislike" ? -600 : 0;
     const ty = dir === "superlike" ? -600 : 0;
     const rot = dir === "like" ? 20 : dir === "dislike" ? -20 : 0;
-    activeTopCard.style.transition = "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s";
-    activeTopCard.style.transform = `translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg)`;
-    activeTopCard.style.opacity = "0";
+    card.style.transition = "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.28s";
+    card.style.transform = `translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg)`;
+    card.style.opacity = "0";
   }
   setTimeout(async () => {
     if (dir === "superlike") { session.super_like_used = true; session.super_liked = img.id; }
     session.votes[img.id] = dir;
-    currentDragX = 0; activeTopCard = null;
+    swipe.dx = 0; swipe.locked = false; swipe.cardEl = null;
     await db.upsertSession(session);
     state.sessions = state.sessions.map(s => s.name === session.name ? session : s);
     if (state.images.filter(i => !session.votes[i.id]).length === 0) state.done = true;
@@ -510,17 +497,14 @@ async function processFiles(files) {
       const id = Date.now().toString() + Math.floor(Math.random() * 10000);
       const url = await db.uploadImage(blob, id);
       const img = { id, url, label: state.uploadLabel.trim() || file.name.replace(/\.[^.]+$/, ""), added_at: Date.now() };
-      await db.addImage(img);
-      state.images.push(img); state.uploadLabel = "";
+      await db.addImage(img); state.images.push(img); state.uploadLabel = "";
     } catch(e) { state.uploadError = `Error: ${e.message}`; }
   }
   state.uploading = false; render();
 }
 
 async function removeImage(id) {
-  await db.removeImage(id);
-  state.images = state.images.filter(i => i.id !== id);
-  render();
+  await db.removeImage(id); state.images = state.images.filter(i => i.id !== id); render();
 }
 
 async function downloadAll() {
@@ -529,15 +513,13 @@ async function downloadAll() {
   try {
     const zip = new JSZip();
     await Promise.all(state.images.map(async (img, i) => {
-      const r = await fetch(img.url);
-      const blob = await r.blob();
+      const r = await fetch(img.url); const blob = await r.blob();
       zip.file(`${String(i+1).padStart(2,"0")}_${(img.label||"image").replace(/[^a-zA-Z0-9._-]/g,"_")}.jpg`, blob);
     }));
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "datassist-inspiration.zip";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
   } catch(e) { console.error(e); }
   state.downloading = false; render();
 }
